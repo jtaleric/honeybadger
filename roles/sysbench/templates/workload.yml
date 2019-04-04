@@ -20,9 +20,18 @@ spec:
         volumeMounts:
         - name: sysbench-volume
           mountPath: "/tmp/"
+{% if store_results %}
+        - name: result-data
+          mountPath: "{{results.path}}"
+{% endif %}
       volumes:
       - name: sysbench-volume
         configMap:
           name: "{{ meta.name }}-sysbench-config"
           defaultMode: 0777
+{% if store_results %}
+      - name: result-data
+        persistentVolumeClaim:
+          claimName: result-volume
+{% endif %}
       restartPolicy: OnFailure

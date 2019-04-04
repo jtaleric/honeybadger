@@ -1,0 +1,27 @@
+---
+
+- name: Get files
+  shell: find {{results.path}} -maxdepth 1 -printf '%f\n' | grep '^[0-9]'
+  ignore_errors: true
+  register: result_files
+
+- block:
+  - debug:
+      msg: "{{result_files}}"
+
+  - name: Result data
+    slurp:
+      src: "{{results.path}}/{{ item }}"
+    register: result_data
+    with_items: "{{result_files.stdout_lines}}"
+
+  - name: Index data
+    uri:
+      url: "http://{{ es.server }}:9200/{{ es.index }}/doc"
+      method: POST
+      status_code: 200
+      body: "{{ lookup('template','result.json') }}"
+      body_format: json
+    with_items: "{{result_data.results}}"
+
+  when: result_files.rc == 0

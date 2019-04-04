@@ -1,7 +1,15 @@
 #!/bin/bash
 {% for test in sysbench.tests %}
+
 {% if test.name == "cpu" or test.name == "memory" %}
-sysbench --test={{test.name}} {% for opt,value in test.parameters.iteritems() %} --{{opt}}={{value}} {% endfor %} run
+
+sysbench --test={{test.name}} \
+  {% for opt,value in test.parameters.iteritems() %}
+  --{{opt}}={{value}} \
+  {% endfor %}
+  run {% if store_results %} \
+  | tee {{results.path}}/$(date '+%d%m%Y_%H%M%S')-sysbench {% endif %}
+
 {% elif test.name == "fileio" %}
 {% if 'file-total-size' not in test.parameters %}
 {% set dummy = test['parameters'].__setitem__("file-total-size", "1G") %}
@@ -13,4 +21,5 @@ sysbench --test=fileio {% for opt,value in test.parameters.items() %} --{{opt}}=
 sysbench --test=fileio {% for opt,value in test.parameters.items() %} --{{opt}}={{value}} {% endfor %} run
 sysbench --test=fileio --file-total-size={{test['parameters']['file-total-size']}} cleanup
 {% endif %}
+
 {% endfor %}

@@ -16,3 +16,11 @@
   - include_role:
       name: "ycsb-bench"
     when: ycsb is defined and ycsb.workers > 0
+
+  - name: Check results directory
+    command: ls -tarlh /opt/result-data/
+    register: data
+  - debug:
+      msg: "Out {{data}}"
+  - include_role:
+      name: result

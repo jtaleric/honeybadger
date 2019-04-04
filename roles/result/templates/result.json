@@ -1,0 +1,5 @@
+{
+  "uuid": "{{es.uuid}}",
+  "user": "{{user}}",
+  "result": "{{ item | regex_replace('\n','LINEBREAK') }}"
+}
