@@ -1,0 +1,32 @@
+---
+kind: Job
+apiVersion: batch/v1
+metadata:
+  name: '{{ meta.name }}-pgbench-client'
+  namespace: '{{ operator_namespace }}'
+spec:
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: pbench-client
+    spec:
+      containers:
+      - name: benchmark
+        image: "quay.io/cloud-bulldozer/pgbench:latest"
+        command: ["/bin/sh", "-c"]
+        args:
+          - "echo "Init Database";
+             pgbench -h {{pgbench.database.ip}} -p {{pgbench.database.port}} -u {{pgbench.database.user}} -i -s {{pgbench.scaling}} {{pgbench.database.db_name}};
+             if [ $? -eq 0 ]; then
+               echo "Running PGBench"
+             fi
+            "
+        volumeMounts:
+          - name: config-volume
+            mountPath: "/tmp/pgbench-test"
+      volumes:
+        - name: config-volume
+          configMap:
+            name: pgbench-test
+      restartPolicy: OnFailure
